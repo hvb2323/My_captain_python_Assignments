@@ -1,0 +1,122 @@
+#openpyxl helps me in xlsx data 
+#datetime going to help me in time recordings of the expenses
+
+import openpyxl
+from datetime import datetime
+
+#This class will be able to used for the purpose of the recording the expenses and other operation and this data is going to be exported to xlsx
+
+class ExpenseTracker:
+    def __init__(self):
+        self.expenses = [] #an empty list for storing the expenses
+
+#add the new expenses 
+
+    def add_expense(self, amount, description, category):
+        date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        entry = {"Date": date, "Description": description, "Amount": amount, "Category": category}
+        self.expenses.append(entry)
+        print("Expense added successfully!")
+#If  exists,then going to be edited or else going to be added
+
+    def edit_expense(self, index, amount, description, category):
+        if 0 <= index < len(self.expenses):
+            date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            entry = {"Date": date, "Description": description, "Amount": amount, "Category": category}
+            self.expenses[index] = entry
+            print("Expense edited successfully!")
+        else:
+            print("Invalid index!")
+# removing the not required expenses
+
+    def delete_expense(self, index):
+        if 0 <= index < len(self.expenses):
+            del self.expenses[index]
+            print("Expense deleted successfully!")
+        else:
+            print("Invalid index!")
+
+#Getting exporrting the expense recorded data into xlsx format exccel file
+
+    def export_to_excel(self, filename="expenses.xlsx"):
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+
+        headers = ["Date", "Description", "Amount", "Category"]
+        sheet.append(headers)
+
+        for expense in self.expenses:
+            sheet.append([expense[header] for header in headers])
+
+        workbook.save(filename)
+        print(f"Expense data exported to {filename} successfully!")
+
+#showing summary
+
+    def display_summary(self):
+        total_spending = sum(float(expense["Amount"]) for expense in self.expenses)
+        print(f"Total Spending: ${total_spending:.2f}")
+
+        categories = set(expense["Category"] for expense in self.expenses)
+        for category in categories:
+            category_spending = sum(float(expense["Amount"]) for expense in self.expenses if expense["Category"] == category)
+            print(f"{category} Spending: ${category_spending:.2f}")
+
+    def display_analysis(self):
+        if not self.expenses:
+            print("No expenses to analyze.")
+            return
+
+        highest_expense = max(self.expenses, key=lambda x: float(x["Amount"]))
+        lowest_expense = min(self.expenses, key=lambda x: float(x["Amount"]))
+
+        print(f"Highest Expense: {highest_expense}")
+        print(f"Lowest Expense: {lowest_expense}")
+
+# Example Usage
+tracker = ExpenseTracker()
+
+while True:
+    print("\nExpense Tracker Menu:")
+    print("1. Add Expense")
+    print("2. Edit Expense")
+    print("3. Delete Expense")
+    print("4. Export to Excel")
+    print("5. Display Summary")
+    print("6. Display Analysis")
+    print("7. Exit")
+
+    choice = input("Enter your choice: ")
+
+    if choice == "1":
+        amount = input("Enter the amount spent: ")
+        description = input("Enter the description: ")
+        category = input("Enter the category: ")
+        tracker.add_expense(amount, description, category)
+
+    elif choice == "2":
+        index = int(input("Enter the index of the expense to edit: "))
+        amount = input("Enter the new amount spent: ")
+        description = input("Enter the new description: ")
+        category = input("Enter the new category: ")
+        tracker.edit_expense(index, amount, description, category)
+
+    elif choice == "3":
+        index = int(input("Enter the index of the expense to delete: "))
+        tracker.delete_expense(index)
+
+    elif choice == "4":
+        filename = input("Enter the filename for the Excel export (default: expenses.xlsx): ")
+        tracker.export_to_excel(filename)
+
+    elif choice == "5":
+        tracker.display_summary()
+
+    elif choice == "6":
+        tracker.display_analysis()
+
+    elif choice == "7":
+        break
+
+    else:
+        print("Invalid choice. Please try again.")
