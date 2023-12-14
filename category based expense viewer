@@ -1,0 +1,135 @@
+import json
+import os
+
+DATA_FILE = "expense_data.json"
+
+def load_data():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as file:
+            return json.load(file)
+    else:
+        return {"expenses": [], "categories": ["Groceries", "Transportation", "Entertainment", "Utilities"]}
+
+def save_data(data):
+    with open(DATA_FILE, "w") as file:
+        json.dump(data, file, indent=2)
+
+def display_menu():
+    print("\nExpense Tracker Menu:")
+    print("1. Add Expense")
+    print("2. View Expenses")
+    print("3. View Category Summaries")
+    print("4. Manage Categories")
+    print("5. Exit")
+
+def add_expense(data):
+    print("\nEnter Expense Details:")
+    description = input("Description: ")
+    amount = float(input("Amount: "))
+    
+    # Display categories for user selection
+    print("\nSelect a Category:")
+    for i, category in enumerate(data["categories"], start=1):
+        print(f"{i}. {category}")
+    
+    category_index = int(input("Enter the number corresponding to the category: ")) - 1
+    category = data["categories"][category_index]
+
+    expense = {"description": description, "amount": amount, "category": category}
+    data["expenses"].append(expense)
+    save_data(data)
+    print("Expense added successfully.")
+
+def view_expenses(data):
+    if not data["expenses"]:
+        print("No expenses recorded.")
+        return
+    
+    print("\nAll Expenses:")
+    for expense in data["expenses"]:
+        print(f"{expense['description']} - ${expense['amount']} - {expense['category']}")
+
+def view_category_summaries(data):
+    if not data["expenses"]:
+        print("No expenses recorded.")
+        return
+
+    print("\nCategory Summaries:")
+    for category in data["categories"]:
+        expenses_in_category = [expense["amount"] for expense in data["expenses"] if expense["category"] == category]
+        total_spending = sum(expenses_in_category)
+        average_spending = total_spending / len(expenses_in_category) if expenses_in_category else 0
+        print(f"{category}: Total - ${total_spending}, Average - ${average_spending:.2f}")
+
+def manage_categories(data):
+    print("\nManage Categories:")
+    print("1. Add Category")
+    print("2. Edit Category")
+    print("3. Remove Category")
+    print("4. Back to Main Menu")
+
+    choice = input("Enter your choice (1-4): ")
+
+    if choice == "1":
+        add_category(data)
+    elif choice == "2":
+        edit_category(data)
+    elif choice == "3":
+        remove_category(data)
+    elif choice == "4":
+        return
+    else:
+        print("Invalid choice. Please try again.")
+
+def add_category(data):
+    new_category = input("Enter the new category name: ")
+    data["categories"].append(new_category)
+    save_data(data)
+    print(f"Category '{new_category}' added successfully.")
+
+def edit_category(data):
+    print("\nExisting Categories:")
+    for i, category in enumerate(data["categories"], start=1):
+        print(f"{i}. {category}")
+
+    category_index = int(input("Enter the number corresponding to the category to edit: ")) - 1
+
+    new_category = input("Enter the new category name: ")
+    data["categories"][category_index] = new_category
+    save_data(data)
+    print("Category edited successfully.")
+
+def remove_category(data):
+    print("\nExisting Categories:")
+    for i, category in enumerate(data["categories"], start=1):
+        print(f"{i}. {category}")
+
+    category_index = int(input("Enter the number corresponding to the category to remove: ")) - 1
+    removed_category = data["categories"].pop(category_index)
+    
+    # Remove the category from all expenses
+    data["expenses"] = [expense for expense in data["expenses"] if expense["category"] != removed_category]
+    
+    save_data(data)
+    print(f"Category '{removed_category}' removed successfully.")
+
+if __name__ == "__main__":
+    expense_data = load_data()
+
+    while True:
+        display_menu()
+        choice = input("Enter your choice (1-5): ")
+
+        if choice == "1":
+            add_expense(expense_data)
+        elif choice == "2":
+            view_expenses(expense_data)
+        elif choice == "3":
+            view_category_summaries(expense_data)
+        elif choice == "4":
+            manage_categories(expense_data)
+        elif choice == "5":
+            print("Exiting the Expense Tracker. Goodbye!")
+            break
+        else:
+            print("Invalid choice. Please try again.")
